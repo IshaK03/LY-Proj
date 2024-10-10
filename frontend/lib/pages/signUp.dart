@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/home.dart';
 import 'package:frontend/reusable_widgets/reusable_widgets.dart';
 
 class SignUp extends StatefulWidget {
@@ -42,12 +43,12 @@ class _SignUpState extends State<SignUp> {
                 const SizedBox(
                   height: 20,
                 ),
-                reusableTextField("Enter UserName", Icons.person_outline, false,
+                reusableTextField("Enter Username", Icons.person_outline, false,
                     _userNameTextController),
                 const SizedBox(
                   height: 20,
                 ),
-                reusableTextField("Enter Email Id", Icons.person_outline, false,
+                reusableTextField("Enter Email-Id", Icons.person_outline, false,
                     _emailTextController),
                 const SizedBox(
                   height: 20,
@@ -57,6 +58,9 @@ class _SignUpState extends State<SignUp> {
                 const SizedBox(
                   height: 20,
                 ),
+                signInSignUpButton(context, false, (){
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+                })
                 // firebaseUIButton(context, "Sign Up", () {
                 //   FirebaseAuth.instance
                 //       .createUserWithEmailAndPassword(

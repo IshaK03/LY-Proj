@@ -1,0 +1,29 @@
+  {
+  "project_info": {
+    "project_number": "368662943980",
+    "project_id": "medipal-4bc46",
+    "storage_bucket": "medipal-4bc46.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:368662943980:android:c61eb79d5c79b66659edc9",
+        "android_client_info": {
+          "package_name": "com.example.frontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCk4errXt0YfC6gOQpMZFLZqGeTZZKE5xg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

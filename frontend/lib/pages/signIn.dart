@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/home.dart';
 import 'package:frontend/pages/signUp.dart';
 import 'package:frontend/reusable_widgets/reusable_widgets.dart';
 
@@ -45,7 +46,7 @@ class _SignInState extends State<SignIn> {
                   height: 10,
                 ),
                 signInSignUpButton(context, true, (){
-
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
                 }),
                 signUpOption(),
               ],
