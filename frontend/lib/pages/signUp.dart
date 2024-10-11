@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/pages/home.dart';
 import 'package:frontend/reusable_widgets/reusable_widgets.dart';
@@ -59,21 +60,15 @@ class _SignUpState extends State<SignUp> {
                   height: 20,
                 ),
                 signInSignUpButton(context, false, (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+                  //add validation later
+                  FirebaseAuth.instance.createUserWithEmailAndPassword(email: _emailTextController.text, password: _passwordTextController.text).then((value){
+                    print("----------------------------->>>>>>>> Account Created Successfully");
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+                  }).onError((error, stackTrace){
+                    print("Error ${error.toString()}");
+                  });
                 })
-                // firebaseUIButton(context, "Sign Up", () {
-                //   FirebaseAuth.instance
-                //       .createUserWithEmailAndPassword(
-                //           email: _emailTextController.text,
-                //           password: _passwordTextController.text)
-                //       .then((value) {
-                //     print("Created New Account");
-                //     Navigator.push(context,
-                //         MaterialPageRoute(builder: (context) => HomeScreen()));
-                //   }).onError((error, stackTrace) {
-                //     print("Error ${error.toString()}");
-                //   });
-                // })
+             
               ],
             ),
           ))),

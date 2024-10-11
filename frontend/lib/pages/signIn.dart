@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/pages/home.dart';
 import 'package:frontend/pages/signUp.dart';
@@ -35,7 +36,7 @@ class _SignInState extends State<SignIn> {
                 SizedBox(
                   height: 30,
                 ),
-                reusableTextField("Enter Username", Icons.person_outline, false,
+                reusableTextField("Enter Email", Icons.person_outline, false,
                     _emailTextController),
                 const SizedBox(
                   height: 20,
@@ -46,7 +47,12 @@ class _SignInState extends State<SignIn> {
                   height: 10,
                 ),
                 signInSignUpButton(context, true, (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+                  FirebaseAuth.instance.signInWithEmailAndPassword(email: _emailTextController.text, password: _passwordTextController.text).then((value){
+                    print("****************************LOGGED IN");
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+                  }).onError((error, stackTrace) {
+                    print("Error ${error.toString()}");
+                  });
                 }),
                 signUpOption(),
               ],

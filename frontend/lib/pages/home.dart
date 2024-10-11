@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/pages/signIn.dart';
 
@@ -16,7 +17,14 @@ class _HomeScreenState extends State<HomeScreen> {
         child: ElevatedButton(
           child: Text("Logout"),
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => SignIn()));
+            FirebaseAuth.instance.signOut().then((value) {
+              print("%%%%%%%%%%%%%%%%%%%%%%----SIGNED OUT");
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => SignIn()));
+            }).onError((error, stackTrace) {
+              print("Error ${error.toString()}");
+            });
+            ;
             // FirebaseAuth.instance.signOut().then((value) {
             //   print("Signed Out");
             //   Navigator.push(context,
