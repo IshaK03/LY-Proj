@@ -21,7 +21,9 @@ class _SignUpState extends State<SignUp> {
   String? _emailError;
   String? _passwordError;
 
-  bool _isLinkSent = false;  // Track if verification link was sent
+  String? _selectedRole = 'Patient'; // Default role
+
+  bool _isLinkSent = false; // Track if verification link was sent
   bool _isEmailVerified = false;
   Timer? _timer; // To periodically check for email verification
 
@@ -71,7 +73,9 @@ class _SignUpState extends State<SignUp> {
       _emailError = validateEmail(_emailTextController.text);
       _passwordError = validatePassword(_passwordTextController.text);
 
-      if (_usernameError != null || _emailError != null || _passwordError != null) {
+      if (_usernameError != null ||
+          _emailError != null ||
+          _passwordError != null) {
         String errorMessage = '';
         if (_usernameError != null) errorMessage += _usernameError!;
         if (_emailError != null) errorMessage += '\n${_emailError!}';
@@ -89,7 +93,9 @@ class _SignUpState extends State<SignUp> {
         _isLinkSent = true;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Verification link sent! Check your email."), backgroundColor: Colors.green),
+        const SnackBar(
+            content: Text("Verification link sent! Check your email."),
+            backgroundColor: Colors.green),
       );
     } catch (e) {
       showValidationError(context, "Error sending verification link.");
@@ -125,26 +131,102 @@ class _SignUpState extends State<SignUp> {
             child: Column(
               children: [
                 const SizedBox(height: 20),
-                reusableTextField("Enter Username", Icons.person_outline, false, _userNameTextController, validateUsername),
+                reusableTextField("Enter Username", Icons.person_outline, false,
+                    _userNameTextController, validateUsername),
                 const SizedBox(height: 20),
-                reusableTextField("Enter Email-Id", Icons.email, false, _emailTextController, validateEmail),
+                reusableTextField("Enter Email-Id", Icons.email, false,
+                    _emailTextController, validateEmail),
                 const SizedBox(height: 20),
-                reusableTextField("Enter Password", Icons.lock_outlined, true, _passwordTextController, validatePassword),
+                reusableTextField("Enter Password", Icons.lock_outlined, true,
+                    _passwordTextController, validatePassword),
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(31.0),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment
+                        .start, // Aligns the title and radio buttons to the left
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(0,18,0,0),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.person_outline, // Add the icon here
+                              color: Colors.white70,
+                            ),
+                            const SizedBox(
+                                width: 8.0), // Space between icon and text
+                            Text(
+                              'Select Role',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 17.0,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      RadioListTile<String>(
+                        value: "Patient",
+                        groupValue: _selectedRole,
+                        title: Text(
+                          'Patient',
+                          style:
+                              TextStyle(color: Colors.white.withOpacity(0.9)),
+                        ),
+                        activeColor: Colors.white70,
+                        contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedRole = value;
+                          });
+                        },
+                      ),
+                      RadioListTile<String>(
+                        value: "Guardian",
+                        groupValue: _selectedRole,
+                        title: Text(
+                          'Guardian',
+                          style:
+                              TextStyle(color: Colors.white.withOpacity(0.9)),
+                        ),
+                        activeColor: Colors.white70,
+                        contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 4),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedRole = value;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 20),
                 signInSignUpButton(context, false, () async {
                   validateFields();
-                  if (_usernameError == null && _emailError == null && _passwordError == null) {
+                  if (_usernameError == null &&
+                      _emailError == null &&
+                      _passwordError == null) {
                     try {
                       // Create the user
-                      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                      UserCredential userCredential = await FirebaseAuth
+                          .instance
+                          .createUserWithEmailAndPassword(
                         email: _emailTextController.text,
                         password: _passwordTextController.text,
                       );
 
                       User user = userCredential.user!;
-                      await _sendVerificationEmail(user); // Send the verification email
+                      await _sendVerificationEmail(
+                          user); // Send the verification email
                     } catch (error) {
-                      showValidationError(context, "Sign up failed: ${error.toString()}");
+                      showValidationError(
+                          context, "Sign up failed: ${error.toString()}");
                     }
                   }
                 }),
