@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 String? validateUsername(String? username) {
@@ -32,4 +33,15 @@ void showValidationError(BuildContext context, String message) {
       duration: Duration(seconds: 5),
     ),
   );
+}
+
+Future<void> sendEmailVerification(BuildContext context) async {
+  try {
+    await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Email verification link sent"), backgroundColor: Colors.green),
+    );
+  } catch (e) {
+    showValidationError(context, e.toString());
+  }
 }

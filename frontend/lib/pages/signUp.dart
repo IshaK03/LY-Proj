@@ -1,10 +1,9 @@
-// signUp.dart
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:frontend/pages/home.dart';
 import 'package:frontend/reusable_widgets/reusable_widgets.dart';
 import 'package:frontend/utils/validation_utils.dart';
+import 'dart:async'; // Import to use Timer for periodic checks
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -22,6 +21,50 @@ class _SignUpState extends State<SignUp> {
   String? _emailError;
   String? _passwordError;
 
+  bool _isLinkSent = false;  // Track if verification link was sent
+  bool _isEmailVerified = false;
+  Timer? _timer; // To periodically check for email verification
+
+  @override
+  void initState() {
+    super.initState();
+    _startEmailVerificationCheck();
+  }
+
+  // Start the periodic email verification check
+  void _startEmailVerificationCheck() {
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+      await _checkEmailVerified();
+    });
+  }
+
+  // Stop the periodic check when the widget is disposed
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  // Check if email is verified
+  Future<void> _checkEmailVerified() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await user.reload(); // Refresh the user data
+      setState(() {
+        _isEmailVerified = user.emailVerified;
+      });
+
+      // If the email is verified, navigate to the HomeScreen
+      if (_isEmailVerified) {
+        _timer?.cancel(); // Stop the timer since email is verified
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      }
+    }
+  }
+
   void validateFields() {
     setState(() {
       _usernameError = validateUsername(_userNameTextController.text);
@@ -37,6 +80,20 @@ class _SignUpState extends State<SignUp> {
         showValidationError(context, errorMessage);
       }
     });
+  }
+
+  Future<void> _sendVerificationEmail(User user) async {
+    try {
+      await user.sendEmailVerification();
+      setState(() {
+        _isLinkSent = true;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Verification link sent! Check your email."), backgroundColor: Colors.green),
+      );
+    } catch (e) {
+      showValidationError(context, "Error sending verification link.");
+    }
   }
 
   @override
@@ -74,20 +131,36 @@ class _SignUpState extends State<SignUp> {
                 const SizedBox(height: 20),
                 reusableTextField("Enter Password", Icons.lock_outlined, true, _passwordTextController, validatePassword),
                 const SizedBox(height: 20),
-                signInSignUpButton(context, false, () {
+                signInSignUpButton(context, false, () async {
                   validateFields();
                   if (_usernameError == null && _emailError == null && _passwordError == null) {
-                    FirebaseAuth.instance.createUserWithEmailAndPassword(
-                      email: _emailTextController.text,
-                      password: _passwordTextController.text,
-                    ).then((value) {
-                      print("----------------------------->>>>>>>> Account Created Successfully");
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
-                    }).onError((error, stackTrace) {
-                      print("Error ${error.toString()}");
-                    });
+                    try {
+                      // Create the user
+                      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                        email: _emailTextController.text,
+                        password: _passwordTextController.text,
+                      );
+
+                      User user = userCredential.user!;
+                      await _sendVerificationEmail(user); // Send the verification email
+                    } catch (error) {
+                      showValidationError(context, "Sign up failed: ${error.toString()}");
+                    }
                   }
                 }),
+                const SizedBox(height: 20),
+                // Resend Link Button (only appears if the link has been sent)
+                _isLinkSent
+                    ? ElevatedButton(
+                        onPressed: () async {
+                          User? user = FirebaseAuth.instance.currentUser;
+                          if (user != null) {
+                            await _sendVerificationEmail(user);
+                          }
+                        },
+                        child: const Text('Resend Verification Link'),
+                      )
+                    : Container(),
               ],
             ),
           ),
