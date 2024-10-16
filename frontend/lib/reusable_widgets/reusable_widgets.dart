@@ -11,7 +11,7 @@ Image logoWidget(String imagePath) {
 }
 
 TextField reusableTextField(String text, IconData icon, bool isPasswordType,
-    TextEditingController controller) {
+    TextEditingController controller, String? Function(String?)? validator) {
   return TextField(
     controller: controller,
     obscureText: isPasswordType,
@@ -20,10 +20,7 @@ TextField reusableTextField(String text, IconData icon, bool isPasswordType,
     cursorColor: Colors.white,
     style: TextStyle(color: Colors.white.withOpacity(0.9)),
     decoration: InputDecoration(
-      prefixIcon: Icon(
-        icon,
-        color: Colors.white70,
-      ),
+      prefixIcon: Icon(icon, color: Colors.white70),
       labelText: text,
       labelStyle: TextStyle(color: Colors.white.withOpacity(0.9)),
       filled: true,
@@ -32,6 +29,7 @@ TextField reusableTextField(String text, IconData icon, bool isPasswordType,
       border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30.0),
           borderSide: const BorderSide(width: 0, style: BorderStyle.none)),
+      // errorText: validator?.call(controller.text),
     ),
     keyboardType: isPasswordType
         ? TextInputType.visiblePassword
@@ -44,18 +42,12 @@ Container signInSignUpButton(BuildContext context, bool isLogin, Function onTap)
   return Container(
     width: MediaQuery.of(context).size.width,
     height: 50,
-    margin: EdgeInsets.fromLTRB(0, 10, 0, 20),
+    margin: const EdgeInsets.fromLTRB(0, 10, 0, 20),
     decoration: BoxDecoration(borderRadius: BorderRadius.circular(90)),
     child: ElevatedButton(
       onPressed: (){
         onTap();
-      }, 
-      child: Text(
-        isLogin ? 'Login' : 'Sign Up',
-        style: TextStyle(
-          color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 16
-        ),
-      ),
+      },
       style: ButtonStyle(
         backgroundColor: WidgetStateProperty.resolveWith((states){
           if(states.contains(WidgetState.pressed)){
@@ -66,6 +58,12 @@ Container signInSignUpButton(BuildContext context, bool isLogin, Function onTap)
         shape: WidgetStateProperty.all<RoundedRectangleBorder>(
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))
         )
+      ), 
+      child: Text(
+        isLogin ? 'Login' : 'Sign Up',
+        style: TextStyle(
+          color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 16
+        ),
       )
       )
   );
