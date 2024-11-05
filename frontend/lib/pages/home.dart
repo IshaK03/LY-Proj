@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:frontend/pages/chatpage.dart';
 import 'package:frontend/pages/signUp.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -15,7 +16,6 @@ class HomeScreen extends StatelessWidget {
       body: Container(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
-        
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xff4b6cb7), Color(0xff182848)],
@@ -45,7 +45,31 @@ class HomeScreen extends StatelessWidget {
               },
               child: const Text('Sign Out'),
             ),
+
             const SizedBox(height: 20),
+            InkWell(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const ChatApp(),
+                  ),
+                );
+              },
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.5,
+                height: MediaQuery.of(context).size.height * 0.2,
+                decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 66, 129, 223),
+                    borderRadius: BorderRadius.circular(25)),
+                child: const Align(
+                  alignment: Alignment.center,
+                  child: Text(
+                    "ChatBot",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            )
           ],
         ),
       ),
