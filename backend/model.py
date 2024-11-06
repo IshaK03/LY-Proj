@@ -11,7 +11,7 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from dotenv import load_dotenv
 from langchain_community.document_loaders import CSVLoader
 from langchain.docstore.document import Document
-
+from langchain_core.prompts import PromptTemplate
 # Configure environment and load variables
 warnings.filterwarnings("ignore")
 load_dotenv(".env")
@@ -21,11 +21,14 @@ GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
 genai.configure(api_key=GOOGLE_API_KEY)
 
 # Initialize model and embeddings
-model = ChatGoogleGenerativeAI(model="gemini-pro", google_api_key=GOOGLE_API_KEY, temperature=0.7, convert_system_message_to_human=True)
-embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=GOOGLE_API_KEY)
+model = ChatGoogleGenerativeAI(model="gemini-pro", google_api_key=GOOGLE_API_KEY,
+                               temperature=0.7, convert_system_message_to_human=True)
+embeddings = GoogleGenerativeAIEmbeddings(
+    model="models/embedding-001", google_api_key=GOOGLE_API_KEY)
 
 # Initialize Chroma database
-chroma_db = Chroma(persist_directory="data", embedding_function=embeddings, collection_name="lc_chroma_demo")
+chroma_db = Chroma(persist_directory="data",
+                   embedding_function=embeddings, collection_name="lc_chroma_demo")
 
 # Clear existing collection if any
 collection = chroma_db.get()['ids']
@@ -33,6 +36,8 @@ if len(collection):
     chroma_db.delete(ids=collection)
 
 # Load CSV data
+
+
 def load_csv(file_path: str):
     documents = []
     try:
@@ -45,6 +50,8 @@ def load_csv(file_path: str):
     return documents
 
 # Update the database with documents from CSV files
+
+
 def update_db():
     global chroma_db
     docs = []
@@ -69,7 +76,8 @@ def update_db():
 
     # Persist the updated database
     if docs:
-        chroma_db = Chroma.from_documents(documents=docs, embedding=embeddings, persist_directory="data", collection_name="lc_chroma_demo")
+        chroma_db = Chroma.from_documents(
+            documents=docs, embedding=embeddings, persist_directory="data", collection_name="lc_chroma_demo")
         chroma_db.persist()
         print("Database updated successfully.")
     else:
@@ -77,6 +85,8 @@ def update_db():
 
 # Query processing
 # Query processing with persistent retriever initialization
+
+
 def run_query(query: str):
     if len(chroma_db.get()['ids']) == 0:
         return "The vector database is currently empty. Please add relevant documents to perform a search."
@@ -87,11 +97,17 @@ def run_query(query: str):
     # Improved prompt template
     template = """
     You are a helpful interactive chatbot.
-    If it is a casual conversation, respond accordingly.
-    You are a highly knowledgeable medical assistant chatbot. Use the following pieces of document to answer the question at the end, emphasizing any details provided in CSV files first. If no relevant information is found, respond based on general knowledge or available documents.
-    Context: {context}
-    Question: {question}
-    Answer in a helpful, medically accurate way:"""
+If it is a casual conversation, respond accordingly.
+
+You are a highly knowledgeable medical assistant chatbot.
+Use the following pieces of document to answer the question at the end, emphasizing any details provided in CSV files first. 
+If no relevant information is found, respond based on general knowledge or available documents.
+
+After detecting a potential disease or condition based on the symptoms provided, suggest general remedies or lifestyle tips that could help alleviate symptoms or prevent worsening conditions. 
+
+Context: {context}
+Question: {question}
+Answer in a helpful, medically accurate way, and include any general remedies or tips related to the identified condition when appropriate:"""
     QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
 
     qa_chain = RetrievalQA.from_chain_type(
@@ -105,6 +121,7 @@ def run_query(query: str):
     # Run the query and return result
     result = qa_chain({"query": query})
     return result["result"]
+
 
 # Initialize and update the database
 update_db()

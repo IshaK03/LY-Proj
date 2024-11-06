@@ -3,7 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 
 class ApiService {
-  final String baseUrl = "http://127.0.0.1:8000";
+  // Add your laptop IP address
+  final String baseUrl = "http://192.168.0.208:8000";
 
   Future<String> sendQuery(String userMessage) async {
     final url = Uri.parse("$baseUrl/run_query/");

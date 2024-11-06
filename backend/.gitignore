@@ -6,5 +6,6 @@ venv
 .env
 
 # files/*
+data/
 
 _pycache_
