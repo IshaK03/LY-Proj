@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/pages/chatpage.dart';
 import 'package:frontend/pages/home.dart';
 import 'package:frontend/pages/signUp.dart';
+import 'package:frontend/reusable_widgets/bottomNavbar.dart';
 import 'package:frontend/reusable_widgets/reusable_widgets.dart';
 import 'package:frontend/utils/validation_utils.dart'; // Add this import
 
@@ -75,7 +76,7 @@ class _SignInState extends State<SignIn> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const HomeScreen()));
+                              builder: (context) => BottomNavbar()));
                     }).onError((error, stackTrace) {
                       print("Error ${error.toString()}");
                     });

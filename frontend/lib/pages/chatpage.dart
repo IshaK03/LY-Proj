@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/providers/chatprovider.dart';
+import 'package:frontend/reusable_widgets/bottomNavbar.dart';
 import 'package:frontend/utils/api_service.dart';
 import 'package:provider/provider.dart';
 
@@ -40,16 +41,22 @@ class _ChatAppState extends State<ChatApp> {
         elevation: 0.0,
       ),
       body: Container(
-        width: double.infinity,
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
         decoration: const BoxDecoration(
-          color: Color.fromRGBO(76, 123, 238, 1),
+          gradient: LinearGradient(
+            colors: [Color(0xff4b6cb7), Color(0xff182848)],
+            stops: [0, 1],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
         child: Column(
           children: [
             Expanded(
               child: ListView.builder(
                 reverse: true,
-                padding: EdgeInsets.all(10.0),
+                padding: EdgeInsets.fromLTRB(20, 10, 20, 0),
                 itemCount: chatProvider.messages.length,
                 itemBuilder: (context, index) {
                   final message =
@@ -62,7 +69,7 @@ class _ChatAppState extends State<ChatApp> {
                       constraints: BoxConstraints(
                         maxWidth: MediaQuery.of(context).size.width * 0.6,
                       ),
-                      margin: EdgeInsets.symmetric(vertical: 5.0),
+                      margin: EdgeInsets.symmetric(vertical: 7.0),
                       padding: EdgeInsets.all(10.0),
                       decoration: BoxDecoration(
                         color: message.isUser
@@ -83,13 +90,13 @@ class _ChatAppState extends State<ChatApp> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.fromLTRB(20, 15, 10, 85),
               child: Row(
                 children: [
                   Expanded(
                     child: TextField(
                       controller: _controller,
-                      style: const TextStyle(height: 2.0, color: Colors.white),
+                      style: const TextStyle(height: 1.5, color: Colors.white),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Color.fromARGB(255, 119, 138, 181),
@@ -107,9 +114,10 @@ class _ChatAppState extends State<ChatApp> {
                         onPressed: () => sendMessage(context, _controller.text),
                         icon: const Icon(Icons.send)),
                   ),
+                  
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),
