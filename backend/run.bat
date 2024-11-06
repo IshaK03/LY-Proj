@@ -1,0 +1,9 @@
+echo Activating the virtual environment...
+call .\.venv\Scripts\activate
+
+echo Running the application...
+python run.py
+
+@REM echo Deactivating the virtual environment...
+@REM deactivate
+@REM pause

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/providers/chatprovider.dart';
+import 'package:frontend/utils/api_service.dart';
 import 'package:provider/provider.dart';
 
 class ChatApp extends StatefulWidget {
@@ -11,14 +12,19 @@ class ChatApp extends StatefulWidget {
 
 class _ChatAppState extends State<ChatApp> {
   final TextEditingController _controller = TextEditingController();
+  late ApiService apiService;
+
+  @override
+  void initState() {
+    super.initState();
+    apiService = ApiService();
+  }
+
   void sendMessage(BuildContext context, String message) {
     if (message.trim().isEmpty) return;
 
-    context.read<ChatProvider>().addMessage(message, true);
-
-    Future.delayed(Duration(seconds: 1), () {
-      context.read<ChatProvider>().addMessage("Bot said: $message", false);
-    });
+    // Call sendMessageToServer, which sends the message to FastAPI and updates the UI with the response
+    context.read<ChatProvider>().sendMessageToServer(message);
 
     _controller.clear();
   }

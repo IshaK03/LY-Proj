@@ -1,0 +1,10 @@
+#python environment variable
+venv
+.venv
+
+#GEMINI_API_KEY
+.env
+
+# files/*
+
+_pycache_
