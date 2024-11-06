@@ -15,7 +15,7 @@ class _BottomNavbarState extends State<BottomNavbar> {
   final List<Widget> _pages = [
     HomeScreen(),
     ChatApp(),
-    Scan(),
+    ScanPage(),
   ];
 
   // Handle navigation internally within the widget
