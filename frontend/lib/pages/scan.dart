@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/reusable_widgets/drawer.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:ui';
@@ -84,7 +85,10 @@ class _ScanPageState extends State<ScanPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Scan Prescriptions"),
+        centerTitle: true,
+        backgroundColor: Color.fromRGBO(76, 123, 238, 1),
       ),
+      drawer: const CustomDrawer(),
       body: Container(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,

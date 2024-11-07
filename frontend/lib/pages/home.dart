@@ -1,82 +1,304 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:frontend/pages/chatpage.dart';
-import 'package:frontend/pages/signUp.dart';
+import 'package:frontend/models/medication_reminder.dart';
+import 'package:frontend/pages/signin.dart';
+import 'package:frontend/providers/medicationProvider.dart';
+import 'package:frontend/reusable_widgets/drawer.dart';
+import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  Future<String> fetchAffirmation() async {
+    final response = await http.get(Uri.parse('https://www.affirmations.dev/'));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      return data['affirmation'] ?? 'No affirmation available';
+    } else {
+      throw Exception('Failed to load affirmation');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = FirebaseAuth.instance;
-    final user = auth.currentUser; // Fetch the current user
+    final user = auth.currentUser;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Home')),
-      body: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xff4b6cb7), Color(0xff182848)],
-            stops: [0, 1],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Check if user is not null, then display the email
-            Text(
-              'Welcome to Home Screen, ${user?.email ?? 'User'}', // Shows 'User' if no email is found
-              style: const TextStyle(fontSize: 16),
+      appBar: AppBar(
+        title: const Text('Home'),
+        centerTitle: true,
+        backgroundColor: Color.fromRGBO(76, 123, 238, 1),
+      ),
+      drawer: const CustomDrawer(),
+      body: Stack(
+        children: [
+          Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xff4b6cb7), Color(0xff182848)],
+                stops: [0, 1],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
-            const SizedBox(height: 20),
-
-            // Logout Button
-            ElevatedButton(
-              onPressed: () {
-                auth.signOut();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SignUp()),
-                );
-              },
-              child: const Text('Sign Out'),
-            ),
-
-            const SizedBox(height: 20),
-            InkWell(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const ChatApp(),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  const Text(
+                    "Patient Dashboard",
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
                   ),
-                );
-              },
-              child: Container(
-                width: MediaQuery.of(context).size.width * 0.5,
-                height: MediaQuery.of(context).size.height * 0.2,
-                decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 66, 129, 223),
-                    borderRadius: BorderRadius.circular(25)),
-                child: const Align(
-                  alignment: Alignment.center,
-                  child: Text(
-                    "ChatBot",
+                  const Text(
+                    "Your Prescriptions for Today",
                     style: TextStyle(color: Colors.white),
                   ),
-                ),
+                  const SizedBox(height: 20),
+                  Consumer<MedicationProvider>(
+                    builder: (context, provider, _) {
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: provider.medications.length,
+                        itemBuilder: (context, index) {
+                          final reminder = provider.medications[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 10.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                              child: ListTile(
+                                title: Text(
+                                  reminder.name,
+                                  style: const TextStyle(color: Colors.black),
+                                ),
+                                subtitle: Text(
+                                  'Time: ${reminder.time} - Dosage: ${reminder.dosage}',
+                                  style: const TextStyle(color: Colors.black54),
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit,
+                                          color: Colors.black),
+                                      onPressed: () {
+                                        _showEditDialog(
+                                            context, provider, reminder, index);
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete,
+                                          color: Colors.red),
+                                      onPressed: () {
+                                        provider.removeMedication(reminder);
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  // Use FutureBuilder to fetch and display the affirmation
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 20.0, horizontal: 16.0),
+                    child: FutureBuilder<String>(
+                      future: fetchAffirmation(), // Call the API
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const CircularProgressIndicator();
+                        } else if (snapshot.hasError) {
+                          return const Text(
+                            "Error loading affirmation",
+                            style: TextStyle(color: Colors.white),
+                          );
+                        } else if (snapshot.hasData) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: const Color.fromRGBO(255, 255, 255, 0.2),
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text(
+                              "Daily Affirmation: ${snapshot.data}",
+                              style: const TextStyle(
+                                color: Color.fromARGB(255, 255, 255, 255),
+                                fontSize: 16,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          );
+                        } else {
+                          return const Text(
+                            "No affirmation available",
+                            style: TextStyle(color: Colors.white),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      width: 300,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Emergency action
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          padding: const EdgeInsets.all(12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                        ),
+                        child: const Text(
+                          "Emergency",
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 80,
+                  )
+                ],
               ),
-            )
-          ],
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 100.0),
+        child: FloatingActionButton(
+          onPressed: () => _showAddDialog(context),
+          child: const Icon(Icons.add),
+          backgroundColor: Colors.white,
         ),
       ),
     );
   }
 }
 
+void _showAddDialog(BuildContext context) {
+  final nameController = TextEditingController();
+  final timeController = TextEditingController();
+  final dosageController = TextEditingController();
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Add Medication'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: 'Name'),
+            ),
+            TextField(
+              controller: timeController,
+              decoration: const InputDecoration(labelText: 'Time'),
+            ),
+            TextField(
+              controller: dosageController,
+              decoration: const InputDecoration(labelText: 'Dosage'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final newReminder = MedicationReminder(
+                name: nameController.text,
+                time: timeController.text,
+                dosage: dosageController.text,
+              );
+              Provider.of<MedicationProvider>(context, listen: false)
+                  .addMedication(newReminder);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+// Function to show the Edit Medication dialog
+void _showEditDialog(BuildContext context, MedicationProvider provider,
+    MedicationReminder reminder, int index) {
+  final nameController = TextEditingController(text: reminder.name);
+  final timeController = TextEditingController(text: reminder.time);
+  final dosageController = TextEditingController(text: reminder.dosage);
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Edit Medication'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: 'Name'),
+            ),
+            TextField(
+              controller: timeController,
+              decoration: const InputDecoration(labelText: 'Time'),
+            ),
+            TextField(
+              controller: dosageController,
+              decoration: const InputDecoration(labelText: 'Dosage'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final updatedReminder = MedicationReminder(
+                name: nameController.text,
+                time: timeController.text,
+                dosage: dosageController.text,
+              );
+              provider.updateMedication(index, updatedReminder);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Update'),
+          ),
+        ],
+      );
+    },
+  );
+}
 
 
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/providers/chatprovider.dart';
 import 'package:frontend/reusable_widgets/bottomNavbar.dart';
+import 'package:frontend/reusable_widgets/drawer.dart';
 import 'package:frontend/utils/api_service.dart';
 import 'package:provider/provider.dart';
 
@@ -40,6 +41,7 @@ class _ChatAppState extends State<ChatApp> {
         backgroundColor: Color.fromRGBO(76, 123, 238, 1),
         elevation: 0.0,
       ),
+      drawer: const CustomDrawer(),
       body: Container(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
@@ -114,7 +116,6 @@ class _ChatAppState extends State<ChatApp> {
                         onPressed: () => sendMessage(context, _controller.text),
                         icon: const Icon(Icons.send)),
                   ),
-                  
                 ],
               ),
             ),

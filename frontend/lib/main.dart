@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/pages/signin.dart';
 import 'package:frontend/providers/chatprovider.dart';
+import 'package:frontend/providers/medicationProvider.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -20,7 +21,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           create: (context) => ChatProvider(),
-        )
+        ),
+        ChangeNotifierProvider(create: (context) => MedicationProvider())
       ],
       child: MaterialApp(
         title: 'MediPal',

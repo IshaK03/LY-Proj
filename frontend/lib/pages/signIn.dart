@@ -73,7 +73,7 @@ class _SignInState extends State<SignIn> {
                             password: _passwordTextController.text)
                         .then((value) {
                       print("****************************LOGGED IN");
-                      Navigator.push(
+                      Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                               builder: (context) => BottomNavbar()));
