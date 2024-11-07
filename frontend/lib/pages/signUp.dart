@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:frontend/pages/home.dart';
+import 'package:frontend/reusable_widgets/bottomNavbar.dart';
 import 'package:frontend/reusable_widgets/reusable_widgets.dart';
 import 'package:frontend/utils/validation_utils.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:async'; // Import to use Timer for periodic checks
 
 class SignUp extends StatefulWidget {
@@ -61,7 +64,7 @@ class _SignUpState extends State<SignUp> {
         _timer?.cancel(); // Stop the timer since email is verified
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(builder: (context) =>  BottomNavbar()),
         );
       }
     }
@@ -99,6 +102,26 @@ class _SignUpState extends State<SignUp> {
       );
     } catch (e) {
       showValidationError(context, "Error sending verification link.");
+    }
+  }
+
+  Future<void> _createFirestoreUser(User user) async {
+    try {
+      // Fetch the FCM token
+      String? fcmToken = await FirebaseMessaging.instance.getToken();
+
+      // Create the Firestore user document
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'name': _userNameTextController.text, // Store username
+        'email': user.email, // Store email
+        'role': _selectedRole, // Store selected role (Patient/Guardian)
+        'fcmToken': fcmToken ?? '', // Store the FCM token (if available)
+        // Add other fields as needed (e.g., bloodGroup, allergies)
+      });
+
+      print("User document created successfully with FCM token!");
+    } catch (error) {
+      print("Error creating user document: $error");
     }
   }
 
@@ -147,19 +170,17 @@ class _SignUpState extends State<SignUp> {
                     borderRadius: BorderRadius.circular(31.0),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment
-                        .start, // Aligns the title and radio buttons to the left
+                    crossAxisAlignment: CrossAxisAlignment.start, // Aligns the title and radio buttons to the left
                     children: [
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(0,18,0,0),
+                        padding: const EdgeInsets.fromLTRB(0, 18, 0, 0),
                         child: Row(
                           children: [
                             const Icon(
                               Icons.person_outline, // Add the icon here
                               color: Colors.white70,
                             ),
-                            const SizedBox(
-                                width: 8.0), // Space between icon and text
+                            const SizedBox(width: 8.0), // Space between icon and text
                             Text(
                               'Select Role',
                               style: TextStyle(
@@ -214,19 +235,18 @@ class _SignUpState extends State<SignUp> {
                       _passwordError == null) {
                     try {
                       // Create the user
-                      UserCredential userCredential = await FirebaseAuth
-                          .instance
-                          .createUserWithEmailAndPassword(
+                      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
                         email: _emailTextController.text,
                         password: _passwordTextController.text,
                       );
 
                       User user = userCredential.user!;
-                      await _sendVerificationEmail(
-                          user); // Send the verification email
+                      await _sendVerificationEmail(user); // Send the verification email
+
+                      // Create Firestore document with FCM token and other data
+                      await _createFirestoreUser(user);
                     } catch (error) {
-                      showValidationError(
-                          context, "Sign up failed: ${error.toString()}");
+                      showValidationError(context, "Sign up failed: ${error.toString()}");
                     }
                   }
                 }),

@@ -36,7 +36,7 @@ class _ChatAppState extends State<ChatApp> {
     final chatProvider = context.watch<ChatProvider>();
     return Scaffold(
       appBar: AppBar(
-        title: Text('Chatbot UI'),
+        title: Text('Chatbot'),
         centerTitle: true,
         backgroundColor: Color.fromRGBO(76, 123, 238, 1),
         elevation: 0.0,

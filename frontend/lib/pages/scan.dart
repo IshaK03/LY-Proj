@@ -171,10 +171,21 @@ class _ScanPageState extends State<ScanPage> {
                   width: buttonWidth,
                   child: ElevatedButton.icon(
                     onPressed: _captureImage,
-                    icon: const Icon(Icons.camera_alt),
-                    label: const Text("Scan"),
+                    icon:
+                        const Icon(Icons.camera_alt, color: Colors.blueAccent),
+                    label: const Text(
+                      "Scan",
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                     style: ElevatedButton.styleFrom(
                       alignment: Alignment.center, // Center-aligns the text
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30)),
                     ),
                   ),
                 ),
@@ -183,10 +194,20 @@ class _ScanPageState extends State<ScanPage> {
                   width: buttonWidth,
                   child: ElevatedButton.icon(
                     onPressed: _pickImage,
-                    icon: const Icon(Icons.image),
-                    label: const Text("Upload From Gallery"),
+                    icon: const Icon(Icons.image, color: Colors.blueAccent),
+                    label: const Text(
+                      "Upload From Gallery",
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                     style: ElevatedButton.styleFrom(
                       alignment: Alignment.center, // Center-aligns the text
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30)),
                     ),
                   ),
                 ),
@@ -194,8 +215,15 @@ class _ScanPageState extends State<ScanPage> {
                 SizedBox(
                   width: buttonWidth,
                   child: ElevatedButton.icon(
-                    icon: const Icon(Icons.check),
-                    label: const Text("Confirm"),
+                    icon: const Icon(Icons.check, color: Colors.blueAccent),
+                    label: const Text(
+                      "Confirm",
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -206,7 +234,10 @@ class _ScanPageState extends State<ScanPage> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      alignment: Alignment.center, // Center-aligns the text
+                      alignment: Alignment.center, 
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30)),
                     ),
                   ),
                 ),

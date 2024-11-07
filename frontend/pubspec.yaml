@@ -40,6 +40,8 @@ dependencies:
     provider:
     http: 
     image_picker:
+    firebase_messaging:
+    cloud_firestore:
 dev_dependencies:
     flutter_test:
         sdk: flutter
