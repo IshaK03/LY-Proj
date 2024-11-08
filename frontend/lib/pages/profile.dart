@@ -226,6 +226,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 // Blood Group field (editable)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  decoration:
+                      BoxDecoration(borderRadius: BorderRadius.circular(200)),
                   child: DropdownButtonFormField<String>(
                     value: _bloodGroupController.text.isEmpty
                         ? null
@@ -259,22 +261,27 @@ class _ProfilePageState extends State<ProfilePage> {
 
                     // Items list (blood groups)
                     items: [
-                      'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-',
+                      'A+',
+                      'A-',
+                      'B+',
+                      'B-',
+                      'AB+',
+                      'AB-',
+                      'O+',
+                      'O-',
                     ].map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
                         child: Text(
                           value,
-                          style: TextStyle(
-                              color: Colors
-                                  .black), // Text color for the dropdown items
+                          style: TextStyle(color: Colors.black),
                         ),
                       );
                     }).toList(),
 
                     // Dropdown menu customization
-                    dropdownColor:
-                        Colors.blueAccent, // Background color of the dropdown
+                    dropdownColor: const Color.fromARGB(
+                        255, 255, 255, 255), // Background color of the dropdown
                     menuMaxHeight:
                         200, // Set a max height for the dropdown menu
                     isExpanded:
@@ -283,7 +290,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     alignment: Alignment.centerLeft,
                     selectedItemBuilder: (BuildContext context) {
                       return [
-                        'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-',
+                        'A+',
+                        'A-',
+                        'B+',
+                        'B-',
+                        'AB+',
+                        'AB-',
+                        'O+',
+                        'O-',
                       ].map<Widget>((String item) {
                         return Text(
                           item,
@@ -329,7 +343,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     controller: _emergencyContactsController,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      labelText: "Enter Emergency Contacts (Eg: +91XXXXXXXXXX, +91XXXXXXXXXX)",
+                      labelText:
+                          "Enter Emergency Contacts (Eg: +91XXXXXXXXXX, +91XXXXXXXXXX)",
                       labelStyle:
                           TextStyle(color: Colors.white.withOpacity(0.9)),
                       prefixIcon:
