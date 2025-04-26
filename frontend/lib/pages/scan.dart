@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/reusable_widgets/drawer.dart';
+import 'package:frontend/utils/api_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:ui';
@@ -10,15 +11,15 @@ class ScanPage extends StatefulWidget {
 }
 
 class _ScanPageState extends State<ScanPage> {
-  List<File> _prescriptionImages = []; // Store the selected or captured images
+  File? prescriptionImage; // Store the selected or captured images
   final ImagePicker _picker = ImagePicker();
-
+  final ApiService apiService = ApiService();
   // Function to pick image from gallery
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        _prescriptionImages.add(File(pickedFile.path));
+        prescriptionImage = File(pickedFile.path);
       });
     }
   }
@@ -28,24 +29,24 @@ class _ScanPageState extends State<ScanPage> {
     final pickedFile = await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
       setState(() {
-        _prescriptionImages.add(File(pickedFile.path));
+        prescriptionImage = File(pickedFile.path);
       });
     }
   }
 
   // Function to remove a selected image
-  void _removeImage(int index) {
+  void _removeImage() {
     setState(() {
-      _prescriptionImages.removeAt(index);
+      prescriptionImage = null;
     });
   }
 
   // Function to retake an image (replace at specific index)
-  Future<void> _retakeImage(int index) async {
+  Future<void> _retakeImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
       setState(() {
-        _prescriptionImages[index] = File(pickedFile.path);
+        prescriptionImage = File(pickedFile.path);
       });
     }
   }
@@ -104,62 +105,45 @@ class _ScanPageState extends State<ScanPage> {
           children: [
             const SizedBox(height: 20),
             Expanded(
-              child: _prescriptionImages.isEmpty
-                  ? Image.asset(
-                      'assets/images/prescriptionGraphic.png', // Placeholder image asset
-                      height: 350,
-                      fit: BoxFit.contain,
-                    )
-                  : ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _prescriptionImages.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: EdgeInsets.only(
-                            left: index == 0
-                                ? 20.0
-                                : 0, // Space for the first image
-                            right: 10.0, // Space between images
-                            top: 12,
+              child: prescriptionImage != null
+                  ? Stack(
+                      children: [
+                        InkWell(
+                          onTap: () => _showFullScreenImage(prescriptionImage!),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.file(
+                              prescriptionImage!,
+                              height: 300,
+                              width: 250,
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                          child: Stack(
+                        ),
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Row(
                             children: [
-                              InkWell(
-                                onTap: () => _showFullScreenImage(
-                                    _prescriptionImages[index]),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(
-                                      16), // Rounded corners
-                                  child: Image.file(
-                                    _prescriptionImages[index],
-                                    height: 300,
-                                    width: 250,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
+                              IconButton(
+                                icon: const Icon(Icons.replay,
+                                    color: Colors.white),
+                                onPressed: _retakeImage,
                               ),
-                              Positioned(
-                                top: 8,
-                                right: 8,
-                                child: Row(
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.replay,
-                                          color: Colors.white),
-                                      onPressed: () => _retakeImage(index),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete,
-                                          color: Colors.redAccent),
-                                      onPressed: () => _removeImage(index),
-                                    ),
-                                  ],
-                                ),
+                              IconButton(
+                                icon: const Icon(Icons.delete,
+                                    color: Colors.redAccent),
+                                onPressed: _removeImage,
                               ),
                             ],
                           ),
-                        );
-                      },
+                        ),
+                      ],
+                    )
+                  : Image.asset(
+                      'assets/images/prescriptionGraphic.png',
+                      height: 350,
+                      fit: BoxFit.contain,
                     ),
             ),
             const SizedBox(height: 10),
@@ -224,17 +208,30 @@ class _ScanPageState extends State<ScanPage> {
                         fontSize: 16,
                       ),
                     ),
-                    onPressed: () {
+                    onPressed: () async {
+                      if (prescriptionImage == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Please select an image first!"),
+                            backgroundColor:
+                                Colors.red, // Red background for error
+                          ),
+                        );
+                        return;
+                      }
+                      var medicationReminders = await apiService
+                          .getMedicationReminders(prescriptionImage!);
+                      debugPrint("Medication reminders: $medicationReminders");
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text("Images confirmed and uploaded!"),
+                        const SnackBar(
+                          content: Text("Images confirmed and uploaded!"),
                           backgroundColor:
                               Colors.green, // Green background for success
                         ),
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      alignment: Alignment.center, 
+                      alignment: Alignment.center,
                       backgroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30)),

@@ -10,3 +10,4 @@ uvicorn
 load-dotenv
 unstructured
 python-magic
+firebase-admin

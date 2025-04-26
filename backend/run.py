@@ -4,8 +4,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 import os
-
 from model import run_query, update_db
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import messaging
+
+cred = credentials.Certificate("serviceAccountKey.json")
+firebase_admin.initialize_app(cred)
+
+
+class PushNotification(BaseModel):
+    device_token: str
+    title: str
+    body: str
+    data: dict = {}
+
 
 app = FastAPI()
 
@@ -103,6 +116,34 @@ async def delete_file(filename: str):
         return {"message": "File deleted"}
     else:
         raise HTTPException(status_code=404, detail="File not found")
+
+
+@app.post("/upload_image/")
+async def upload_image(file: UploadFile = File(...)):
+    contents = await file.read()
+    # Process the image contents here (e.g., OCR)
+    return JSONResponse(content={"message": "Image received and processed successfully!"})
+
+
+@app.post("/send-notification/")
+async def send_notification(notification: PushNotification):
+    try:
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title=notification.title,
+                body=notification.body,
+            ),
+            data=notification.data,
+            token=notification.device_token,
+        )
+
+        response = messaging.send(message)
+        print('Successfully sent message:', response)
+        return {"message": "Notification sent successfully", "response": response}
+    except Exception as e:
+        print(f"Error sending message: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to send notification: {e}")
 
 if __name__ == "__main__":
     import uvicorn

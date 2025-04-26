@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:frontend/pages/profile.dart';
 import 'package:frontend/pages/signin.dart';
+import 'package:frontend/utils/getHash.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({Key? key}) : super(key: key);
@@ -14,7 +15,8 @@ class CustomDrawer extends StatelessWidget {
     final userId = user?.uid;
 
     // Reference to the Firestore user document
-    final userDocRef = FirebaseFirestore.instance.collection('users').doc(userId);
+    final userDocRef =
+        FirebaseFirestore.instance.collection('users').doc(userId);
 
     return Drawer(
       child: ListView(
@@ -56,7 +58,8 @@ class CustomDrawer extends StatelessWidget {
             title: const Text('Profile'),
             onTap: () {
               Navigator.pop(context); // Close the drawer
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilePage()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const ProfilePage()));
             },
           ),
           ListTile(
@@ -67,10 +70,43 @@ class CustomDrawer extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => const SignIn()));
             },
           ),
+          ListTile(
+              title: const Text("Patient ID"),
+              onTap: () async {
+                Navigator.pop(context); // Close the drawer first
+
+                final snapshot = await userDocRef.get();
+                final userName = snapshot.data()?['name'] ?? 'User';
+
+                final patientId =
+                    generateHash(userName); // <-- call your function
+
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('Your Patient ID'),
+                      content: Text(
+                        patientId,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(); // Close the dialog
+                          },
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              })
         ],
       ),
     );
   }
 }
-
-

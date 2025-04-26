@@ -86,7 +86,7 @@ class _ChatAppState extends State<ChatApp> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 15, 10, 85),
+              padding: const EdgeInsets.fromLTRB(20, 15, 10, 100),
               child: Row(
                 children: [
                   Expanded(

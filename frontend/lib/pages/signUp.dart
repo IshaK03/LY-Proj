@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:frontend/pages/home.dart';
 import 'package:frontend/reusable_widgets/bottomNavbar.dart';
 import 'package:frontend/reusable_widgets/reusable_widgets.dart';
+import 'package:frontend/utils/getHash.dart';
 import 'package:frontend/utils/validation_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -16,6 +17,7 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
+  List<Map<String, dynamic>> _patientsList = [];
   final TextEditingController _passwordTextController = TextEditingController();
   final TextEditingController _emailTextController = TextEditingController();
   final TextEditingController _userNameTextController = TextEditingController();
@@ -29,17 +31,33 @@ class _SignUpState extends State<SignUp> {
   bool _isLinkSent = false; // Track if verification link was sent
   bool _isEmailVerified = false;
   Timer? _timer; // To periodically check for email verification
+  TextEditingController _patientIdController = TextEditingController();
+  bool _isPatientIdValid = false;
 
   @override
   void initState() {
     super.initState();
     _startEmailVerificationCheck();
+    _fetchPatients();
   }
 
   // Start the periodic email verification check
   void _startEmailVerificationCheck() {
     _timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
       await _checkEmailVerified();
+    });
+  }
+
+  Future<void> _fetchPatients() async {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('role', isEqualTo: 'Patient')
+        .get();
+    setState(() {
+      _patientsList = snapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+      debugPrint("Fetched patients: $_patientsList");
     });
   }
 
@@ -64,7 +82,7 @@ class _SignUpState extends State<SignUp> {
         _timer?.cancel(); // Stop the timer since email is verified
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) =>  BottomNavbar()),
+          MaterialPageRoute(builder: (context) => BottomNavbar()),
         );
       }
     }
@@ -107,21 +125,68 @@ class _SignUpState extends State<SignUp> {
 
   Future<void> _createFirestoreUser(User user) async {
     try {
-      // Fetch the FCM token
       String? fcmToken = await FirebaseMessaging.instance.getToken();
 
-      // Create the Firestore user document
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-        'name': _userNameTextController.text, // Store username
-        'email': user.email, // Store email
-        'role': _selectedRole, // Store selected role (Patient/Guardian)
-        'fcmToken': fcmToken ?? '', // Store the FCM token (if available)
-        // Add other fields as needed (e.g., bloodGroup, allergies)
-      });
+      Map<String, dynamic> userData = {
+        'name': _userNameTextController.text,
+        'email': user.email,
+        'role': _selectedRole,
+        'fcmToken': fcmToken ?? '',
+      };
 
-      print("User document created successfully with FCM token!");
+      if (_selectedRole == 'Patient') {
+        String patientId = generateHash(_userNameTextController.text);
+        userData['patientID'] = patientId;
+      } else if (_selectedRole == 'Guardian') {
+        if (_isPatientIdValid) {
+          // Later update patient's document with guardian's FCM token
+          String enteredPatientId = _patientIdController.text.trim();
+
+          // Find the matching patient's doc ID
+          var matchingPatientDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .where('patientID', isEqualTo: enteredPatientId)
+              .get();
+
+          if (matchingPatientDoc.docs.isNotEmpty) {
+            var patientDocId = matchingPatientDoc.docs.first.id;
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(patientDocId)
+                .update({
+              'guardiansFCMToken': fcmToken ?? '',
+            });
+          }
+        }
+      }
+
+      // Create Guardian/Patient document
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .set(userData);
+
+      debugPrint("User document created successfully!");
     } catch (error) {
-      print("Error creating user document: $error");
+      debugPrint("Error creating user document: $error");
+    }
+  }
+
+  void _validatePatientId() {
+    String enteredId = _patientIdController.text.trim();
+    bool found =
+        _patientsList.any((patient) => patient['patientID'] == enteredId);
+
+    setState(() {
+      _isPatientIdValid = found;
+    });
+
+    if (!found) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Patient ID not found!'),
+            backgroundColor: Colors.red),
+      );
     }
   }
 
@@ -170,7 +235,8 @@ class _SignUpState extends State<SignUp> {
                     borderRadius: BorderRadius.circular(31.0),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start, // Aligns the title and radio buttons to the left
+                    crossAxisAlignment: CrossAxisAlignment
+                        .start, // Aligns the title and radio buttons to the left
                     children: [
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0, 18, 0, 0),
@@ -180,7 +246,8 @@ class _SignUpState extends State<SignUp> {
                               Icons.person_outline, // Add the icon here
                               color: Colors.white70,
                             ),
-                            const SizedBox(width: 8.0), // Space between icon and text
+                            const SizedBox(
+                                width: 8.0), // Space between icon and text
                             Text(
                               'Select Role',
                               style: TextStyle(
@@ -224,6 +291,36 @@ class _SignUpState extends State<SignUp> {
                           });
                         },
                       ),
+                      if (_selectedRole == "Guardian") ...[
+                        const SizedBox(height: 20),
+                        reusableTextField(
+                            "Enter Patient ID",
+                            Icons.person_search,
+                            false,
+                            _patientIdController,
+                            null),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            ElevatedButton(
+                              onPressed: _validatePatientId,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30.0),
+                                ),
+                              ),
+                              child: const Text("Enter"),
+                            ),
+                            const SizedBox(width: 10),
+                            _isPatientIdValid
+                                ? const Icon(Icons.check_circle,
+                                    color: Colors.green, size: 30)
+                                : Container(),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                      ]
                     ],
                   ),
                 ),
@@ -235,18 +332,22 @@ class _SignUpState extends State<SignUp> {
                       _passwordError == null) {
                     try {
                       // Create the user
-                      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                      UserCredential userCredential = await FirebaseAuth
+                          .instance
+                          .createUserWithEmailAndPassword(
                         email: _emailTextController.text,
                         password: _passwordTextController.text,
                       );
 
                       User user = userCredential.user!;
-                      await _sendVerificationEmail(user); // Send the verification email
+                      await _sendVerificationEmail(
+                          user); // Send the verification email
 
                       // Create Firestore document with FCM token and other data
                       await _createFirestoreUser(user);
                     } catch (error) {
-                      showValidationError(context, "Sign up failed: ${error.toString()}");
+                      showValidationError(
+                          context, "Sign up failed: ${error.toString()}");
                     }
                   }
                 }),
