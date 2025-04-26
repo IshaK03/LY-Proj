@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/providers/chatprovider.dart';
 import 'package:frontend/reusable_widgets/bottomNavbar.dart';
+import 'package:frontend/reusable_widgets/buildMessageWidget.dart';
 import 'package:frontend/reusable_widgets/drawer.dart';
 import 'package:frontend/utils/api_service.dart';
 import 'package:provider/provider.dart';
@@ -68,25 +69,18 @@ class _ChatAppState extends State<ChatApp> {
                         ? Alignment.centerRight
                         : Alignment.centerLeft,
                     child: Container(
-                      constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.6,
-                      ),
-                      margin: EdgeInsets.symmetric(vertical: 7.0),
-                      padding: EdgeInsets.all(10.0),
-                      decoration: BoxDecoration(
-                        color: message.isUser
-                            ? const Color.fromRGBO(0, 38, 153, 1)
-                            : Colors.grey[300],
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      child: Text(
-                        message.text,
-                        style: TextStyle(
-                            height: 2,
-                            color:
-                                message.isUser ? Colors.white : Colors.black),
-                      ),
-                    ),
+                        constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width * 0.6,
+                        ),
+                        margin: const EdgeInsets.symmetric(vertical: 7.0),
+                        padding: const EdgeInsets.all(10.0),
+                        decoration: BoxDecoration(
+                          color: message.isUser
+                              ? const Color.fromRGBO(0, 38, 153, 1)
+                              : Colors.grey[300],
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        child: buildMessageText(message.text, message.isUser)),
                   );
                 },
               ),

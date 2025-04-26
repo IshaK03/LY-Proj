@@ -21,8 +21,12 @@ GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
 genai.configure(api_key=GOOGLE_API_KEY)
 
 # Initialize model and embeddings
-model = ChatGoogleGenerativeAI(model="gemini-pro", google_api_key=GOOGLE_API_KEY,
-                               temperature=0.7, convert_system_message_to_human=True)
+model = ChatGoogleGenerativeAI(
+    model="gemini-1.5-pro-latest",
+    google_api_key=GOOGLE_API_KEY,
+    temperature=0.65,
+    convert_system_message_to_human=True
+)
 embeddings = GoogleGenerativeAIEmbeddings(
     model="models/embedding-001", google_api_key=GOOGLE_API_KEY)
 

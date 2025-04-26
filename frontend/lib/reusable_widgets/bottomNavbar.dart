@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/pages/chatpage.dart';
 import 'package:frontend/pages/home.dart';
+import 'package:frontend/pages/prescription_summary.dart';
 import 'package:frontend/pages/scan.dart';
 
 class BottomNavbar extends StatefulWidget {
@@ -16,6 +17,7 @@ class _BottomNavbarState extends State<BottomNavbar> {
     HomeScreen(),
     ChatApp(),
     ScanPage(),
+    PrescriptionSummary()
   ];
 
   // Handle navigation internally within the widget
@@ -40,16 +42,17 @@ class _BottomNavbarState extends State<BottomNavbar> {
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              height: 70, // Adjust height if needed
               decoration: BoxDecoration(
-                color: Color(0xFF121212), // Dark color for the navbar background
+                color:
+                    Color(0xFF121212), // Dark color for the navbar background
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(30),
                   topRight: Radius.circular(30),
                 ),
               ),
               child: BottomNavigationBar(
-                backgroundColor: Colors.transparent, // Transparent so the container color shows
+                backgroundColor: Colors
+                    .transparent, // Transparent so the container color shows
                 type: BottomNavigationBarType.fixed,
                 currentIndex: _selectedIndex,
                 selectedItemColor: Colors.blueAccent, // Color for selected item
@@ -82,6 +85,14 @@ class _BottomNavbarState extends State<BottomNavbar> {
                       child: Icon(Icons.camera_alt),
                     ),
                     label: 'Scan',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: InkWell(
+                      splashColor: Colors.transparent, // Color of splash effect
+                      onTap: () => _onItemTapped(3), // Handle the tap
+                      child: Icon(Icons.medical_services_outlined),
+                    ),
+                    label: 'Prescriptions',
                   ),
                 ],
               ),

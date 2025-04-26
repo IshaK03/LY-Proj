@@ -50,165 +50,172 @@ class _HomeScreenState extends State<HomeScreen> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            const Text(
-              "Patient Dashboard",
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-            const Text(
-              "Your Prescriptions for Today",
-              style: TextStyle(color: Colors.white),
-            ),
-            const SizedBox(height: 4),
+        child: SingleChildScrollView(
+          physics: NeverScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              const Text(
+                "Patient Dashboard",
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              const Text(
+                "Your Prescriptions for Today",
+                style: TextStyle(color: Colors.white),
+              ),
+              const SizedBox(height: 4),
 
-            // Reminders ListView inside a fixed-height Container
-            SizedBox(
-              height: 320,
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  child: Consumer<MedicationProvider>(
-                    builder: (context, provider, _) {
-                      return ListView.builder(
-                        itemCount: provider.medicationReminders.length,
-                        itemBuilder: (context, index) {
-                          final reminder = provider.medicationReminders[index];
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10.0, vertical: 10.0),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.5),
-                                    spreadRadius: 2,
-                                    blurRadius: 5,
-                                    offset: Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: ListTile(
-                                title: Text(
-                                  reminder.name,
-                                  style: const TextStyle(color: Colors.black),
-                                ),
-                                subtitle: Text(
-                                  'Date & Time: ${reminder.dateTime.toLocal()}\nDosage: ${reminder.dosage}',
-                                  style: const TextStyle(color: Colors.black54),
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit,
-                                          color: Colors.black),
-                                      onPressed: () {
-                                        _showEditDialog(
-                                            context, provider, reminder);
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete,
-                                          color: Colors.red),
-                                      onPressed: () {
-                                        provider.deleteReminder(reminder.id);
-                                      },
+              // Reminders ListView inside a fixed-height Container
+              SizedBox(
+                height: 200,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: Consumer<MedicationProvider>(
+                      builder: (context, provider, _) {
+                        return ListView.builder(
+                          itemCount: provider.medicationReminders.length,
+                          itemBuilder: (context, index) {
+                            final reminder =
+                                provider.medicationReminders[index];
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10.0, vertical: 10.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.5),
+                                      spreadRadius: 2,
+                                      blurRadius: 5,
+                                      offset: Offset(0, 3),
                                     ),
                                   ],
                                 ),
+                                child: ListTile(
+                                  title: Text(
+                                    reminder.name,
+                                    style: const TextStyle(color: Colors.black),
+                                  ),
+                                  subtitle: Text(
+                                    'Date & Time: ${reminder.dateTime.toLocal()}\nDosage: ${reminder.dosage}',
+                                    style:
+                                        const TextStyle(color: Colors.black54),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit,
+                                            color: Colors.black),
+                                        onPressed: () {
+                                          _showEditDialog(
+                                              context, provider, reminder);
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete,
+                                            color: Colors.red),
+                                        onPressed: () {
+                                          provider.deleteReminder(reminder.id);
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-
-            // Affirmation Section
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
-              child: FutureBuilder<String>(
-                future: fetchAffirmation(), // Call the API
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return const Text(
-                      "Error loading affirmation",
-                      style: TextStyle(color: Colors.white),
-                    );
-                  } else if (snapshot.hasData) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: const Color.fromRGBO(255, 255, 255, 0.2),
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        "Daily Affirmation: ${snapshot.data}",
-                        style: const TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontSize: 16,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    );
-                  } else {
-                    return const Text(
-                      "No affirmation available",
-                      style: TextStyle(color: Colors.white),
-                    );
-                  }
-                },
-              ),
-            ),
-            const SizedBox(height: 10),
-
-            // Emergency Button and Floating Action Button for adding medication
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    // Emergency action
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
+                            );
+                          },
+                        );
+                      },
                     ),
                   ),
-                  icon: const Icon(
-                    Icons.notification_important_sharp,
-                    color: Colors.white,
-                  ),
-                  label: const Text(
-                    "Emergency",
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
                 ),
-                const SizedBox(width: 20),
-                FloatingActionButton(
-                  onPressed: () => _showAddDialog(context),
-                  child: const Icon(Icons.add),
-                  backgroundColor: Colors.white,
+              ),
+
+              // Affirmation Section
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 20.0, horizontal: 16.0),
+                child: FutureBuilder<String>(
+                  future: fetchAffirmation(), // Call the API
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return const Text(
+                        "Error loading affirmation",
+                        style: TextStyle(color: Colors.white),
+                      );
+                    } else if (snapshot.hasData) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: const Color.fromRGBO(255, 255, 255, 0.2),
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          "Daily Affirmation: ${snapshot.data}",
+                          style: const TextStyle(
+                            color: Color.fromARGB(255, 255, 255, 255),
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      );
+                    } else {
+                      return const Text(
+                        "No affirmation available",
+                        style: TextStyle(color: Colors.white),
+                      );
+                    }
+                  },
                 ),
-              ],
-            ),
-          ],
+              ),
+              const SizedBox(height: 10),
+
+              // Emergency Button and Floating Action Button for adding medication
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      // Emergency action
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 15, horizontal: 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                    ),
+                    icon: const Icon(
+                      Icons.notification_important_sharp,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      "Emergency",
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  FloatingActionButton(
+                    onPressed: () => _showAddDialog(context),
+                    child: const Icon(Icons.add),
+                    backgroundColor: Colors.white,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -216,177 +223,178 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Add new medication reminder dialog
   void _showAddDialog(BuildContext context) {
-  final nameController = TextEditingController();
-  final dateTimeController = TextEditingController();
-  final dosageController = TextEditingController();
+    final nameController = TextEditingController();
+    final dateTimeController = TextEditingController();
+    final dosageController = TextEditingController();
 
-  DateTime selectedDateTime = DateTime.now();
+    DateTime selectedDateTime = DateTime.now();
 
-  Future<void> _selectDateTime(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: selectedDateTime,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (pickedDate != null) {
-      final TimeOfDay? pickedTime = await showTimePicker(
+    Future<void> _selectDateTime(BuildContext context) async {
+      final DateTime? pickedDate = await showDatePicker(
         context: context,
-        initialTime: TimeOfDay.fromDateTime(selectedDateTime),
+        initialDate: selectedDateTime,
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2101),
       );
 
-      if (pickedTime != null) {
-        selectedDateTime = DateTime(
-          pickedDate.year,
-          pickedDate.month,
-          pickedDate.day,
-          pickedTime.hour,
-          pickedTime.minute,
+      if (pickedDate != null) {
+        final TimeOfDay? pickedTime = await showTimePicker(
+          context: context,
+          initialTime: TimeOfDay.fromDateTime(selectedDateTime),
         );
 
-        dateTimeController.text = selectedDateTime.toLocal().toString();
+        if (pickedTime != null) {
+          selectedDateTime = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+
+          dateTimeController.text = selectedDateTime.toLocal().toString();
+        }
       }
     }
-  }
 
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text('Add Medication'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
-            ),
-            GestureDetector(
-              onTap: () => _selectDateTime(context),
-              child: AbsorbPointer(
-                child: TextField(
-                  controller: dateTimeController,
-                  decoration: const InputDecoration(labelText: 'Date & Time'),
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Add Medication'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
+              GestureDetector(
+                onTap: () => _selectDateTime(context),
+                child: AbsorbPointer(
+                  child: TextField(
+                    controller: dateTimeController,
+                    decoration: const InputDecoration(labelText: 'Date & Time'),
+                  ),
                 ),
               ),
+              TextField(
+                controller: dosageController,
+                decoration: const InputDecoration(labelText: 'Dosage'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
             ),
-            TextField(
-              controller: dosageController,
-              decoration: const InputDecoration(labelText: 'Dosage'),
+            TextButton(
+              onPressed: () {
+                final newReminder = MedicationReminder(
+                  id: DateTime.now().toString(), // Use current timestamp as ID
+                  name: nameController.text,
+                  dateTime: selectedDateTime, // Store DateTime directly
+                  dosage: dosageController.text,
+                );
+                context.read<MedicationProvider>().addReminder(newReminder);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Save'),
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              final newReminder = MedicationReminder(
-                id: DateTime.now().toString(), // Use current timestamp as ID
-                name: nameController.text,
-                dateTime: selectedDateTime, // Store DateTime directly
-                dosage: dosageController.text,
-              );
-              context.read<MedicationProvider>().addReminder(newReminder);
-              Navigator.of(context).pop();
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      );
-    },
-  );
-}
-
-void _showEditDialog(
-    BuildContext context, MedicationProvider provider, MedicationReminder reminder) {
-  final nameController = TextEditingController(text: reminder.name);
-  final dateTimeController = TextEditingController(text: reminder.dateTime.toLocal().toString());
-  final dosageController = TextEditingController(text: reminder.dosage);
-
-  DateTime selectedDateTime = reminder.dateTime;
-
-  Future<void> _selectDateTime(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: selectedDateTime,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
+        );
+      },
     );
+  }
 
-    if (pickedDate != null) {
-      final TimeOfDay? pickedTime = await showTimePicker(
+  void _showEditDialog(BuildContext context, MedicationProvider provider,
+      MedicationReminder reminder) {
+    final nameController = TextEditingController(text: reminder.name);
+    final dateTimeController =
+        TextEditingController(text: reminder.dateTime.toLocal().toString());
+    final dosageController = TextEditingController(text: reminder.dosage);
+
+    DateTime selectedDateTime = reminder.dateTime;
+
+    Future<void> _selectDateTime(BuildContext context) async {
+      final DateTime? pickedDate = await showDatePicker(
         context: context,
-        initialTime: TimeOfDay.fromDateTime(selectedDateTime),
+        initialDate: selectedDateTime,
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2101),
       );
 
-      if (pickedTime != null) {
-        selectedDateTime = DateTime(
-          pickedDate.year,
-          pickedDate.month,
-          pickedDate.day,
-          pickedTime.hour,
-          pickedTime.minute,
+      if (pickedDate != null) {
+        final TimeOfDay? pickedTime = await showTimePicker(
+          context: context,
+          initialTime: TimeOfDay.fromDateTime(selectedDateTime),
         );
 
-        dateTimeController.text = selectedDateTime.toLocal().toString();
+        if (pickedTime != null) {
+          selectedDateTime = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+
+          dateTimeController.text = selectedDateTime.toLocal().toString();
+        }
       }
     }
-  }
 
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text('Edit Medication'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
-            ),
-            GestureDetector(
-              onTap: () => _selectDateTime(context),
-              child: AbsorbPointer(
-                child: TextField(
-                  controller: dateTimeController,
-                  decoration: const InputDecoration(labelText: 'Date & Time'),
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Medication'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
+              GestureDetector(
+                onTap: () => _selectDateTime(context),
+                child: AbsorbPointer(
+                  child: TextField(
+                    controller: dateTimeController,
+                    decoration: const InputDecoration(labelText: 'Date & Time'),
+                  ),
                 ),
               ),
+              TextField(
+                controller: dosageController,
+                decoration: const InputDecoration(labelText: 'Dosage'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
             ),
-            TextField(
-              controller: dosageController,
-              decoration: const InputDecoration(labelText: 'Dosage'),
+            TextButton(
+              onPressed: () {
+                final editedReminder = MedicationReminder(
+                  id: reminder.id,
+                  name: nameController.text,
+                  dateTime: selectedDateTime, // Store DateTime directly
+                  dosage: dosageController.text,
+                );
+                provider.editMedication(editedReminder);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Save Changes'),
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              final editedReminder = MedicationReminder(
-                id: reminder.id,
-                name: nameController.text,
-                dateTime: selectedDateTime, // Store DateTime directly
-                dosage: dosageController.text,
-              );
-              provider.editMedication(editedReminder);
-              Navigator.of(context).pop();
-            },
-            child: const Text('Save Changes'),
-          ),
-        ],
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
 }
 
 
